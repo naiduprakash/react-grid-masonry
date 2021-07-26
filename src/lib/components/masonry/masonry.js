@@ -5,7 +5,7 @@ import MasonryItem from './masonryItem';
 /**
  * TODO: use context and compound component pattern
  */
-function Masonry({ children, ...props }) {
+function Masonry(props) {
   const { comp: Component, items = [], columnWidth, minCols, gutter } = props;
   let containerRef = React.useRef();
   const { measurementStore, getContainerProps, getStoneProps, forceUpdate } = useMasonryNew({
