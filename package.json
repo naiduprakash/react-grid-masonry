@@ -1,0 +1,62 @@
+{
+  "name": "react-grid-masonry",
+  "description": "Responsive masonry component for React.js",
+  "author": "Prakash Naidu",
+  "keywords": [
+    "react",
+    "masonry",
+    "masonry-layout",
+    "component"
+  ],
+  "version": "0.1.0",
+  "private": false,
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/naiduprakash/react-grid-masonry.git"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "react-resize-detector": "^6.7.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "test": "react-scripts test",
+    "build": "rimraf dist && cross-env-shell NODE_ENV=production babel src/lib --out-dir dist --copy-files",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.14",
+    "@babel/core": "^7.13.14",
+    "@babel/preset-env": "^7.13.12",
+    "cross-env": "^7.0.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "^4.0.3",
+    "rimraf": "^3.0.2"
+  }
+}
