@@ -1,5 +1,5 @@
 ## Responsive masonry component for React.js
-![demo](public\example.gif?raw=true "Optional Title")
+![demo](https://github.com/naiduprakash/react-grid-masonry/blob/master/public/example.gif?raw=true "Optional Title")
 
 ### Install
 Install using `npm install react-grid-masonry`
