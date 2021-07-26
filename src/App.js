@@ -1,36 +1,73 @@
 import React from 'react';
+import faker from 'faker';
 import Masonry from './lib/components/masonry';
-import './App.css';
 
-const initialItems = [
-  { text: 'some text to render on the grid some text to render on the grid' },
-  {
-    text: 'some text to render on the grid some text to render on the grid some text to render on the grid',
+let styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
-  { text: 'some text to render on the grid some text to render on the grid' },
-  {
-    text: 'some text to render on the grid some text to render on the grid some text to render on the grid some text to render on the grid',
+  input: {
+    maxWidth: '100px',
+    margin: '15px auto',
+    padding: '5px 10px',
+    borderRadius: '4px',
+    border: '1px solid #dddddd',
   },
-  { text: 'some text to render on the grid some text to render on the grid' },
-  { text: 'some text to render on the grid some text to render on the grid' },
-  {
-    text: 'some text to render on the grid some text to render on the grid some text to render on the grid',
+  item: {
+    padding: '10px',
+    borderRadius: '4px',
   },
-  { text: 'some text to render on the grid some text to render on the grid' },
-  {
-    text: 'some text to render on the grid some text to render on the grid some text to render on the grid some text to render on the grid',
-  },
-  { text: 'some text to render on the grid some text to render on the grid' },
-];
+};
 
-function Item({ data, itemIdx, isMeasuring }) {
-  return <div>{data.text}</div>;
+const colors = ['#D2B4DE', '#A9CCE3', '#AED6F1', '#A3E4D7', '#A2D9CE', '#A9DFBF', '#ABEBC6'];
+
+function generateFakeData(num) {
+  return Array.from({ length: num }).map(() => {
+    let wordCount = faker.datatype.number(50);
+    return {
+      text: faker.random.words(wordCount),
+      color: colors[faker.datatype.number(colors?.length - 1)],
+    };
+  });
+}
+
+function Item({ data, itemIdx }) {
+  return (
+    <div style={{ ...styles.item, backgroundColor: data.color }}>
+      {itemIdx}:{data.text}
+    </div>
+  );
 }
 
 function App() {
-  const [items, setItems] = React.useState(initialItems);
+  const [itemsCount, setItemsCount] = React.useState(5);
+  const [items, setItems] = React.useState([]);
+
+  const handleInputChange = (e) => {
+    let value = e.target.value;
+    if (value > 0 && value < 200) {
+      setItemsCount(value);
+    }
+  };
+
+  React.useEffect(() => {
+    let data = generateFakeData(itemsCount);
+    setItems(data);
+  }, [itemsCount]);
+
   return (
-    <div>
+    <div style={styles.container}>
+      <input
+        style={styles.input}
+        type="number"
+        min="0"
+        max="200"
+        step="5"
+        value={itemsCount}
+        onChange={handleInputChange}
+      />
       <Masonry comp={Item} uid="uuid" items={items} columnWidth={250} gutter={15} minCols={1} />
     </div>
   );
