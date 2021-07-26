@@ -10,7 +10,7 @@ In a React app, use the Masonry component:
 `import Masonry from 'react-grid-masonry'`  
 ```import React from 'react';
 import faker from 'faker';
-import Masonry from './lib/components/masonry';
+import Masonry from 'react-grid-masonry';
 
 let styles = {
   container: {
