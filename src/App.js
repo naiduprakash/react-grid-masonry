@@ -42,8 +42,9 @@ function App() {
   const [containerWidth, setContainerWidth] = React.useState('100%');
   const [items, setItems] = React.useState([]);
   const [gutterWidth, setGutterWidth] = React.useState(5);
-  const [virtualBoundTop, setVirtualBoundTop] = React.useState(50);
-  const [virtualBoundBottom, setVirtualBoundBottom] = React.useState(50);
+  const [columnWidth, setColumnWidth] = React.useState(250);
+  const [virtualBoundTop, setVirtualBoundTop] = React.useState(250);
+  const [virtualBoundBottom, setVirtualBoundBottom] = React.useState(250);
   const [flexible, setFlexible] = React.useState(true);
   const [virtualize, setVirtualize] = React.useState(true);
   const [breakPoints, setBreakPoints] = React.useState([]);
@@ -61,19 +62,20 @@ function App() {
   };
 
   const handleReset = () => {
-    const resetItems = items.slice(0, 100);
+    const resetItems = items.slice(0, 150);
     setItems(resetItems);
+    setContainerWidth('100%');
     setFlexible(true);
     setVirtualize(true);
     setGutterWidth(5);
-    setContainerWidth('100%');
-    setVirtualBoundTop(50);
-    setVirtualBoundBottom(50);
+    setColumnWidth(250);
+    setVirtualBoundTop(250);
+    setVirtualBoundBottom(250);
     masonryContainerRef.current.scrollTop = 0;
   };
 
   React.useEffect(() => {
-    handleIncrementItems(100);
+    handleIncrementItems(150);
     setBreakPoints(fetchBreakpoints());
   }, []);
 
@@ -81,7 +83,12 @@ function App() {
     <div className="container">
       <div className="toolbar">
         <div className="section">
-          Breakpoints:
+          <div>Total Items:</div>
+          <div>{items.length}</div>
+        </div>
+
+        <div className="section">
+          <div>Breakpoints:</div>
           <div className="btn-group">
             <select value={containerWidth} onChange={(e) => setContainerWidth(e.target.value)}>
               {breakPoints.map((breakpoint) => {
@@ -90,13 +97,26 @@ function App() {
             </select>
           </div>
         </div>
-        <div className="section">Total Items: {items.length}</div>
         <div className="section">
-          Gutter Width:
+          <div>Column Width:</div>
+          <input
+            type="number"
+            name="virtualboundtop"
+            min="100"
+            step="10"
+            max="500"
+            value={columnWidth}
+            onChange={(e) => {
+              setColumnWidth(Number(e.target.value));
+            }}
+          />
+        </div>
+        <div className="section">
+          <div>Gutter Width:</div>
           <input type="number" min="0" value={gutterWidth} onChange={handleGutterWidthChange} />
         </div>
         <div className="section">
-          Flexible:
+          <div>Flexible:</div>
           <input
             type="checkbox"
             name="flexible"
@@ -108,7 +128,7 @@ function App() {
           />
         </div>
         <div className="section">
-          Virtualize:
+          <div>Virtualize:</div>
           <input
             type="checkbox"
             name="virtualize"
@@ -119,8 +139,9 @@ function App() {
             }}
           />
         </div>
-        <div className="section">
-          VirtualBound:
+
+        <div className="section" style={{ flex: 3, minWidth: '150px' }}>
+          <div>VirtualBound:</div>
           <label htmlFor="">
             top
             <input
@@ -156,7 +177,7 @@ function App() {
         <Masonry
           comp={Item}
           items={items}
-          columnWidth={250}
+          columnWidth={columnWidth}
           gutterWidth={gutterWidth}
           minCols={1}
           flexible={flexible}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import styles from './styles.js';
@@ -6,7 +6,7 @@ import debounce from './debounce.js';
 import throttle from './throttle.js';
 import FetchItems from './FetchItems.js';
 import useForceUpdate from './useForceUpdate';
-import useState from './useStateWithCallback';
+// import useState from './useStateWithCallback';
 import defaultLayout from './defaultLayout.js';
 import ScrollContainer from './ScrollContainer.js';
 import fullWidthLayout from './fullWidthLayout.js';
@@ -81,7 +81,8 @@ export default function Masonry(props) {
 
   const fetchMore = () => {
     if (loadItems && typeof loadItems === 'function') {
-      setIsFetching(true, () => loadItems({ from: items.length }));
+      setIsFetching(true);
+      loadItems({ from: items.length });
     }
   };
 
