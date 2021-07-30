@@ -1,19 +1,19 @@
 export default class MeasurementStore {
   map = new WeakMap();
 
-  get(key){
+  get(key) {
     return this.map.get(key);
   }
 
-  has(key){
+  has(key) {
     return this.map.has(key);
   }
 
-  set(key, value){
+  set(key, value) {
     this.map.set(key, value);
   }
 
-  reset(){
+  reset() {
     this.map = new WeakMap();
   }
 }

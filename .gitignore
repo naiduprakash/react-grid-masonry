@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+/src/lib/components/masonry-old/
+/src/lib/components/masonry-oz/
