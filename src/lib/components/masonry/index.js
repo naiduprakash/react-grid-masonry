@@ -1,17 +1,17 @@
-import { Component as ReactComponent, useCallback, useEffect, useMemo, useRef } from 'react';
-import useState from './useStateWithCallback';
-import PropTypes from 'prop-types';
-import debounce from './debounce.js';
-import FetchItems from './FetchItems.js';
+import { useCallback, useEffect, useRef } from 'react';
+import { useResizeDetector } from 'react-resize-detector';
+
 import styles from './styles.js';
-import ScrollContainer from './ScrollContainer.js';
+import debounce from './debounce.js';
 import throttle from './throttle.js';
+import FetchItems from './FetchItems.js';
+import useForceUpdate from './useForceUpdate';
+import useState from './useStateWithCallback';
+import defaultLayout from './defaultLayout.js';
+import ScrollContainer from './ScrollContainer.js';
+import fullWidthLayout from './fullWidthLayout.js';
 import MeasurementStore from './MeasurementStore.js';
 import { getElementHeight, getRelativeScrollTop, getScrollPos } from './scrollUtils.js';
-import defaultLayout from './defaultLayout.js';
-import fullWidthLayout from './fullWidthLayout.js';
-import useForceUpdate from './useForceUpdate';
-import { useResizeDetector } from 'react-resize-detector';
 
 // Multiplied against container height.
 // The amount of extra buffer space for populating visible items.
@@ -49,7 +49,6 @@ export default function Masonry(props) {
   const gridWrapperRef = useRef();
   const scrollContainerRef = useRef();
 
-  // const [width, setWidth] = useState();
   const [scrollTop, setScrollTop] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
@@ -93,14 +92,6 @@ export default function Masonry(props) {
     [forceUpdate]
   );
 
-  const reFlow = useCallback(() => {
-    if (measurementStore) {
-      measurementStore.reset();
-    }
-    measureContainer();
-    forceUpdateAsync();
-  }, [forceUpdateAsync, measureContainer, measurementStore]);
-
   const updateScrollPosition = useCallback(
     throttle(() => {
       if (!scrollContainerRef.current) {
@@ -123,6 +114,17 @@ export default function Masonry(props) {
     }, 0),
     [measureContainer]
   );
+
+  /**
+   * only used it when neccessary
+   */
+  const reFlow = useCallback(() => {
+    if (measurementStore) {
+      measurementStore.reset();
+    }
+    measureContainer();
+    forceUpdateAsync();
+  }, [forceUpdateAsync, measureContainer, measurementStore]);
 
   const handleRefereceEle = (el, item, isMeasuring = false) => {
     if (el) {
