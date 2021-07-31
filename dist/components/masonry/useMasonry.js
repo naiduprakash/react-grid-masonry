@@ -7,21 +7,27 @@ exports.default = useMasonry;
 
 require("core-js/modules/web.dom-collections.iterator.js");
 
-var _react = _interopRequireDefault(require("react"));
+var _react = require("react");
 
-var _styles = require("./styles");
+var _reactResizeDetector = require("react-resize-detector");
 
-var _usePositions = _interopRequireDefault(require("./usePositions"));
+var _styles = _interopRequireDefault(require("./styles.js"));
 
-var _useWindowOnload = _interopRequireDefault(require("./useWindowOnload"));
+var _debounce = _interopRequireDefault(require("./debounce.js"));
 
-var _measurementStore = _interopRequireDefault(require("./measurementStore"));
+var _throttle = _interopRequireDefault(require("./throttle.js"));
+
+var _useForceUpdate = _interopRequireDefault(require("./useForceUpdate"));
+
+var _defaultLayout = _interopRequireDefault(require("./defaultLayout.js"));
+
+var _fullWidthLayout = _interopRequireDefault(require("./fullWidthLayout.js"));
+
+var _MeasurementStore = _interopRequireDefault(require("./MeasurementStore.js"));
+
+var _scrollUtils = require("./scrollUtils.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
-
-function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -29,62 +35,254 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+// Multiplied against container height.
+// The amount of extra buffer space for populating visible items.
+const VIRTUAL_BUFFER_FACTOR = 0.7;
+
+const layoutNumberToCssDimension = n => n !== Infinity ? n : undefined;
+
+function createMeasurementStore() {
+  return new _MeasurementStore.default();
+}
+
+function emptyFn() {}
+
 function useMasonry(props) {
   const {
-    columnWidth = 100,
-    items = []
+    columnWidth = 236,
+    flexible = false,
+    gutterWidth,
+    items,
+    loadItems = emptyFn,
+    minCols = 3,
+    scrollContainer,
+    virtualBoundsTop,
+    virtualBoundsBottom
   } = props;
-
-  const [measurementStore] = _react.default.useState(new _measurementStore.default());
-
-  const isWindowLoaded = (0, _useWindowOnload.default)();
+  const gutter = Number(gutterWidth);
+  const containerHeightRef = (0, _react.useRef)(0);
+  const containerOffsetRef = (0, _react.useRef)(0);
+  const insertAnimationFrameRef = (0, _react.useRef)();
+  const gridWrapperElementRef = (0, _react.useRef)();
+  const scrollContainerElementRef = (0, _react.useRef)();
+  const [scrollTop, setScrollTop] = (0, _react.useState)(0);
+  const [isFetching, setIsFetching] = (0, _react.useState)(false);
   const {
-    positions,
-    forceUpdate
-  } = (0, _usePositions.default)(_objectSpread(_objectSpread({}, props), {}, {
-    measurementStore
-  }));
-  const hasPendingMeasurements = items.some(item => !!item && !measurementStore.has(item));
+    width
+  } = (0, _reactResizeDetector.useResizeDetector)({
+    targetRef: gridWrapperElementRef,
+    refreshMode: 'throttle'
+  });
+  const [forceUpdateValue, forceUpdate] = (0, _useForceUpdate.default)();
+  const [measurementStore] = (0, _react.useState)(createMeasurementStore());
+  const [hasPendingMeasurements, setHasPendingMeasurements] = (0, _react.useState)(props.items.some(item => !!item && !measurementStore.has(item)));
+  let getPositions;
 
-  const getContainerProps = function getContainerProps() {
-    let _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        {
-      style = {}
-    } = _ref,
-        props = _objectWithoutProperties(_ref, ["style"]);
-
-    let preferedStyle = (0, _styles.getPreferedContainerStyle)({
-      positions
+  if (flexible && width !== null) {
+    getPositions = (0, _fullWidthLayout.default)({
+      gutter,
+      cache: measurementStore,
+      minCols,
+      idealColumnWidth: columnWidth,
+      width
     });
-    return _objectSpread({
-      style: _objectSpread(_objectSpread({}, preferedStyle), style)
-    }, props);
-  };
-
-  const getStoneProps = function getStoneProps(itemIndex) {
-    let _ref2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        {
-      style = {}
-    } = _ref2,
-        props = _objectWithoutProperties(_ref2, ["style"]);
-
-    let position = positions[itemIndex] || {};
-    let data = {
-      position,
+  } else {
+    getPositions = (0, _defaultLayout.default)({
+      cache: measurementStore,
       columnWidth,
-      isWindowLoaded,
-      hasPendingMeasurements
-    };
-    let preferedStyle = (0, _styles.getPreferedItemStyle)(data);
-    return _objectSpread({
-      style: _objectSpread(_objectSpread({}, preferedStyle), style)
-    }, props);
+      gutter,
+      justify: 'center',
+      minCols,
+      rawItemCount: items.length,
+      width
+    });
+  }
+
+  const itemsToRender = items.filter(item => item && measurementStore.has(item));
+  const itemsToMeasure = items.filter(item => item && !measurementStore.has(item)).slice(0, minCols);
+  const positions = getPositions(itemsToRender);
+  const measuringPositions = getPositions(itemsToMeasure);
+  const height = positions.length ? Math.max(...positions.map(pos => pos.top + pos.height)) : 0;
+  const measureContainer = (0, _react.useCallback)(() => {
+    if (scrollContainerElementRef.current) {
+      const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
+
+      if (scrollContainer) {
+        containerHeightRef.current = (0, _scrollUtils.getElementHeight)(scrollContainer);
+        const el = gridWrapperElementRef.current;
+
+        if (el instanceof HTMLElement) {
+          const relativeScrollTop = (0, _scrollUtils.getRelativeScrollTop)(scrollContainer);
+          containerOffsetRef.current = el.getBoundingClientRect().top + relativeScrollTop;
+        }
+      }
+    }
+  }, [scrollContainerElementRef, gridWrapperElementRef]);
+
+  const fetchMore = () => {
+    if (loadItems && typeof loadItems === 'function') {
+      setIsFetching(true);
+      loadItems({
+        from: items.length
+      });
+    }
   };
 
+  const getStoneProps = (item, i, position, isMeasuring) => {
+    let stoneProps = {};
+    const {
+      top,
+      left,
+      width
+    } = position;
+    const className = 'masonry-item';
+
+    let style = _objectSpread({}, _styles.default.Masonry__Item);
+
+    if (isMeasuring) {
+      stoneProps.className = className + ' masonry-item-measuring';
+      stoneProps.style = _objectSpread(_objectSpread(_objectSpread({}, style), _styles.default.Masonry__Item__Measuring), {}, {
+        top: layoutNumberToCssDimension(top),
+        left: layoutNumberToCssDimension(left),
+        width: layoutNumberToCssDimension(width)
+      });
+    } else {
+      stoneProps.className = className + ' masonry-item-mounted';
+      stoneProps.style = _objectSpread(_objectSpread(_objectSpread({}, style), _styles.default.Masonry__Item__Mounted), {}, {
+        top: 0,
+        left: 0,
+        transform: "translateX(".concat(left, "px) translateY(").concat(top, "px)"),
+        WebkitTransform: "translateX(".concat(left, "px) translateY(").concat(top, "px)"),
+        width: layoutNumberToCssDimension(width)
+      });
+    }
+
+    stoneProps.ref = el => handleRefereceEle(el, item, isMeasuring);
+
+    stoneProps['data-grid-item'] = i;
+    return stoneProps;
+  };
+
+  const shouldVisible = position => {
+    let isVisible;
+
+    if (scrollContainer) {
+      const containerHeight = containerHeightRef.current;
+      const containerOffset = containerOffsetRef.current;
+      const virtualBuffer = containerHeight * VIRTUAL_BUFFER_FACTOR;
+      const offsetScrollPos = scrollTop - containerOffset;
+      const viewportTop = virtualBoundsTop ? offsetScrollPos - virtualBoundsTop : offsetScrollPos - virtualBuffer;
+      const viewportBottom = virtualBoundsBottom ? offsetScrollPos + containerHeight + virtualBoundsBottom : offsetScrollPos + containerHeight + virtualBuffer;
+      isVisible = !(position.top + position.height < viewportTop || position.top > viewportBottom);
+    } else {
+      // if no scroll container is passed in, items should always be visible
+      isVisible = true;
+    }
+
+    return isVisible;
+  };
+
+  const forceUpdateAsync = (0, _react.useCallback)((0, _throttle.default)(() => {
+    forceUpdate();
+  }), [forceUpdate]);
+  const updateScrollPosition = (0, _react.useCallback)((0, _throttle.default)(() => {
+    if (!scrollContainerElementRef.current) {
+      return;
+    }
+
+    const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
+
+    if (!scrollContainer) {
+      return;
+    }
+
+    setScrollTop((0, _scrollUtils.getScrollPos)(scrollContainer));
+  }), [scrollContainerElementRef.current]);
+  const measureContainerAsync = (0, _react.useCallback)((0, _debounce.default)(() => {
+    measureContainer();
+  }, 0), [measureContainer]);
+
+  const handleRefereceEle = function handleRefereceEle(el, item) {
+    let isMeasuring = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+    if (el) {
+      let height = el.clientHeight;
+      let hasItemInStore = measurementStore.has(item);
+      let prevHeight = 0;
+
+      if (hasItemInStore) {
+        prevHeight = measurementStore.get(item);
+      }
+
+      if (prevHeight !== height) {
+        measurementStore.set(item, height);
+
+        if (!isMeasuring) {
+          forceUpdateAsync();
+        }
+      }
+    }
+  };
+
+  (0, _react.useEffect)(() => {
+    measureContainer();
+  }, [measureContainer]);
+  (0, _react.useEffect)(() => {
+    setIsFetching(false);
+  }, [items]);
+  (0, _react.useEffect)(() => {
+    const hasPendingMeasurementsUpdated = items.some(item => !!item && !measurementStore.has(item));
+
+    if (hasPendingMeasurementsUpdated || hasPendingMeasurementsUpdated !== hasPendingMeasurements) {
+      insertAnimationFrameRef.current = requestAnimationFrame(() => {
+        setHasPendingMeasurements(hasPendingMeasurementsUpdated);
+        forceUpdateAsync();
+      });
+    }
+
+    return () => {
+      if (insertAnimationFrameRef.current) {
+        cancelAnimationFrame(insertAnimationFrameRef.current);
+      }
+    };
+  }, [forceUpdateAsync, forceUpdateValue, hasPendingMeasurements, items, measurementStore]);
+  (0, _react.useEffect)(() => {
+    measureContainerAsync();
+
+    if (scrollContainerElementRef.current != null) {
+      const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
+
+      if (scrollContainer) {
+        setScrollTop((0, _scrollUtils.getScrollPos)(scrollContainer));
+      }
+    }
+  }, [measureContainerAsync, width]);
+  (0, _react.useEffect)(() => {
+    return () => {
+      measureContainerAsync.clearTimeout();
+      updateScrollPosition.clearTimeout();
+    };
+  }, [measureContainerAsync, updateScrollPosition]);
   return {
+    width,
+    handleRefereceEle,
+    containerHeightRef,
+    containerOffsetRef,
+    scrollTop,
+    gridWrapperElementRef,
+    scrollContainerElementRef,
+    updateScrollPosition,
     measurementStore,
-    getContainerProps,
+    getPositions,
+    fetchMore,
+    isFetching,
+    hasPendingMeasurements,
+    shouldVisible,
     getStoneProps,
-    forceUpdate
+    itemsToRender,
+    itemsToMeasure,
+    positions,
+    measuringPositions,
+    height
   };
 }

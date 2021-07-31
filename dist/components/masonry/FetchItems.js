@@ -1,0 +1,65 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = FetchItems;
+
+var _react = require("react");
+
+var _propTypes = _interopRequireDefault(require("prop-types"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * FetchItems is a logic component that renders no content itself. Its job
+ * is to manage when the given fetchMore method should be called based on
+ * the given scroll/size props.
+ *
+ * While no element is actually passed to FetchItems, it is intended to be used
+ * in conjunction with a large scroll container that uses async fetching to
+ * load and render additional data. Based on the height of this container and
+ * its current scroll position, FetchItems is responsible for triggering future
+ * fetch calls.
+ */
+// @flow strict
+function FetchItems(props) {
+  const {
+    containerHeight,
+    fetchMore,
+    isAtEnd,
+    isFetching,
+    scrollHeight,
+    scrollTop
+  } = props;
+
+  const check = () => {
+    if (isAtEnd || isFetching || !fetchMore) {
+      return;
+    }
+
+    const scrollBuffer = containerHeight * 3;
+
+    if (scrollTop + scrollBuffer > scrollHeight) {
+      fetchMore();
+    }
+  }; // Note: purposefully supplying no dependency array so `check` is run on every render
+
+
+  (0, _react.useEffect)(() => {
+    const timeoutId = setTimeout(check);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  });
+  return null;
+}
+
+FetchItems.propTypes = {
+  containerHeight: _propTypes.default.number.isRequired,
+  fetchMore: _propTypes.default.func,
+  isAtEnd: _propTypes.default.bool,
+  isFetching: _propTypes.default.bool.isRequired,
+  scrollHeight: _propTypes.default.number.isRequired,
+  scrollTop: _propTypes.default.number.isRequired
+};

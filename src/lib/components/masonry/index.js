@@ -16,51 +16,54 @@ export default function Masonry(props) {
     getStoneProps,
     itemsToRender,
     itemsToMeasure,
-    gridWrapperRef,
     containerHeightRef,
     containerOffsetRef,
-    scrollContainerRef,
+    gridWrapperElementRef,
+    scrollContainerElementRef,
     measuringPositions,
     updateScrollPosition,
     hasPendingMeasurements,
   } = useMasonry(props);
 
+  const renderItems = (item, i) => {
+    const position = positions[i];
+    const isVisible = shouldVisible(position);
+
+    const itemComponent = (
+      <div key={`item-${i}`} {...getStoneProps(item, i, position)}>
+        <Component data={item} itemIdx={i} isMeasuring={false} />
+      </div>
+    );
+
+    return virtualize ? (isVisible && itemComponent) || null : itemComponent;
+  };
+
+  const renderMeasuringItem = (item, i) => {
+    const refinedIndex = itemsToRender.length + i;
+    let isMeasuring = true;
+    return (
+      <div
+        key={`measuring-${refinedIndex}`}
+        {...getStoneProps(item, refinedIndex, measuringPositions[i], isMeasuring)}
+      >
+        <Component data={item} itemIdx={refinedIndex} isMeasuring={isMeasuring} />
+      </div>
+    );
+  };
+
   let gridBody;
-  if (width == null) {
+  if (!width) {
     // When the width is empty (usually after a re-mount) render an empty
     // div to collect the width for layout
-    gridBody = <div style={{ width: '100%' }} ref={gridWrapperRef} />;
+    gridBody = <div style={{ width: '100%' }} ref={gridWrapperElementRef} />;
   } else {
-    // Full layout is possible
     gridBody = (
-      <div style={{ width: '100%' }} ref={gridWrapperRef}>
+      <div style={{ width: '100%' }} ref={gridWrapperElementRef}>
         <div className="masonry" style={{ ...styles.Masonry, height, width }}>
-          {itemsToRender.map((item, i) => {
-            const position = positions[i];
-            const isVisible = shouldVisible(position);
-
-            const itemComponent = (
-              <div key={`item-${i}`} {...getStoneProps(item, i, position)}>
-                <Component data={item} itemIdx={i} isMeasuring={false} />
-              </div>
-            );
-
-            return virtualize ? (isVisible && itemComponent) || null : itemComponent;
-          })}
+          {itemsToRender.map(renderItems)}
         </div>
         <div className="masonry" style={{ ...styles.Masonry, width }}>
-          {itemsToMeasure.map((item, i) => {
-            const refinedIndex = itemsToRender.length + i;
-            let isMeasuring = true;
-            return (
-              <div
-                key={`measuring-${refinedIndex}`}
-                {...getStoneProps(item, refinedIndex, measuringPositions[i], isMeasuring)}
-              >
-                <Component data={item} itemIdx={refinedIndex} isMeasuring={isMeasuring} />
-              </div>
-            );
-          })}
+          {itemsToMeasure.map(renderMeasuringItem)}
         </div>
 
         {scrollContainer && (
@@ -75,10 +78,10 @@ export default function Masonry(props) {
       </div>
     );
   }
-
   return scrollContainer ? (
     <ScrollContainer
-      ref={scrollContainerRef}
+
+      ref={scrollContainerElementRef}
       onScroll={updateScrollPosition}
       scrollContainer={scrollContainer}
     >

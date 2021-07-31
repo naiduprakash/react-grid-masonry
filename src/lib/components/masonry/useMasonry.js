@@ -40,14 +40,15 @@ export default function useMasonry(props) {
   const containerHeightRef = useRef(0);
   const containerOffsetRef = useRef(0);
   const insertAnimationFrameRef = useRef();
-  const gridWrapperRef = useRef();
-  const scrollContainerRef = useRef();
+  
+  const gridWrapperElementRef = useRef();
+  const scrollContainerElementRef = useRef();
 
   const [scrollTop, setScrollTop] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 
   const { width } = useResizeDetector({
-    targetRef: gridWrapperRef,
+    targetRef: gridWrapperElementRef,
     refreshMode: 'throttle',
   });
 
@@ -90,18 +91,18 @@ export default function useMasonry(props) {
   const height = positions.length ? Math.max(...positions.map((pos) => pos.top + pos.height)) : 0;
 
   const measureContainer = useCallback(() => {
-    if (scrollContainerRef.current) {
-      const scrollContainer = scrollContainerRef.current.getScrollContainerRef();
+    if (scrollContainerElementRef.current) {
+      const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
       if (scrollContainer) {
         containerHeightRef.current = getElementHeight(scrollContainer);
-        const el = gridWrapperRef.current;
+        const el = gridWrapperElementRef.current;
         if (el instanceof HTMLElement) {
           const relativeScrollTop = getRelativeScrollTop(scrollContainer);
           containerOffsetRef.current = el.getBoundingClientRect().top + relativeScrollTop;
         }
       }
     }
-  }, [scrollContainerRef, gridWrapperRef]);
+  }, [scrollContainerElementRef, gridWrapperElementRef]);
 
   const fetchMore = () => {
     if (loadItems && typeof loadItems === 'function') {
@@ -173,10 +174,10 @@ export default function useMasonry(props) {
 
   const updateScrollPosition = useCallback(
     throttle(() => {
-      if (!scrollContainerRef.current) {
+      if (!scrollContainerElementRef.current) {
         return;
       }
-      const scrollContainer = scrollContainerRef.current.getScrollContainerRef();
+      const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
 
       if (!scrollContainer) {
         return;
@@ -184,7 +185,7 @@ export default function useMasonry(props) {
 
       setScrollTop(getScrollPos(scrollContainer));
     }),
-    [scrollContainerRef.current]
+    [scrollContainerElementRef.current]
   );
 
   const measureContainerAsync = useCallback(
@@ -240,8 +241,8 @@ export default function useMasonry(props) {
   useEffect(() => {
     measureContainerAsync();
 
-    if (scrollContainerRef.current != null) {
-      const scrollContainer = scrollContainerRef.current.getScrollContainerRef();
+    if (scrollContainerElementRef.current != null) {
+      const scrollContainer = scrollContainerElementRef.current.getScrollContainerRef();
       if (scrollContainer) {
         setScrollTop(getScrollPos(scrollContainer));
       }
@@ -261,8 +262,8 @@ export default function useMasonry(props) {
     containerHeightRef,
     containerOffsetRef,
     scrollTop,
-    gridWrapperRef,
-    scrollContainerRef,
+    gridWrapperElementRef,
+    scrollContainerElementRef,
     updateScrollPosition,
     measurementStore,
     getPositions,
