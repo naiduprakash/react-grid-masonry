@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-require("core-js/modules/web.dom-collections.iterator.js");
-
 var _react = require("react");
 
 var _propTypes = _interopRequireDefault(require("prop-types"));

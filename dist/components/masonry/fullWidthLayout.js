@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-require("core-js/modules/es.array.reduce.js");
-
 const mindex = arr => {
   let idx = 0;
 

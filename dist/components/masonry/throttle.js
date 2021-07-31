@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = throttle;
 
-require("core-js/modules/web.dom-collections.iterator.js");
-
 /**
  * throttle limits the number of times a function can be called to a
  * given threshhold (100ms by default). The function is always called

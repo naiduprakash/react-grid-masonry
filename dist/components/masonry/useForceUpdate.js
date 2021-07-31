@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = useForceUpdate;
 
-require("core-js/modules/web.dom-collections.iterator.js");
-
 var _react = require("react");
 
 // Returning a new object reference guarantees that a before-and-after

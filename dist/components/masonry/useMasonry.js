@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = useMasonry;
 
-require("core-js/modules/web.dom-collections.iterator.js");
-
 var _react = _interopRequireWildcard(require("react"));
 
 var _reactResizeDetector = require("react-resize-detector");

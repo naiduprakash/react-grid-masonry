@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = debounce;
 
-require("core-js/modules/web.dom-collections.iterator.js");
-
 /**
  * debounce prevents a particular function from being called until after a given
  * cooldown period (default 100ms). Every time the function is called, it resets
