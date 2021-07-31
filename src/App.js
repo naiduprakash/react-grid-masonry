@@ -3,6 +3,7 @@ import faker from 'faker';
 import './App.css';
 // import Masonry from './lib/components/masonry-new';
 import Masonry from './lib';
+// import Masonry from './dist';
 
 const colors = ['#D2B4DE', '#A9CCE3', '#AED6F1', '#A3E4D7', '#A2D9CE', '#A9DFBF', '#ABEBC6'];
 

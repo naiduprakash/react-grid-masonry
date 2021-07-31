@@ -7,6 +7,8 @@ exports.default = Masonry;
 
 require("core-js/modules/es.object.assign.js");
 
+var _react = _interopRequireDefault(require("react"));
+
 var _styles = _interopRequireDefault(require("./styles.js"));
 
 var _FetchItems = _interopRequireDefault(require("./FetchItems.js"));
@@ -54,22 +56,24 @@ function Masonry(props) {
   const renderItems = (item, i) => {
     const position = positions[i];
     const isVisible = shouldVisible(position);
-    const itemComponent = /*#__PURE__*/React.createElement("div", _extends({
+
+    const itemComponent = /*#__PURE__*/_react.default.createElement("div", _extends({
       key: "item-".concat(i)
-    }, getStoneProps(item, i, position)), /*#__PURE__*/React.createElement(Component, {
+    }, getStoneProps(item, i, position)), /*#__PURE__*/_react.default.createElement(Component, {
       data: item,
       itemIdx: i,
       isMeasuring: false
     }));
+
     return virtualize ? isVisible && itemComponent || null : itemComponent;
   };
 
   const renderMeasuringItem = (item, i) => {
     const refinedIndex = itemsToRender.length + i;
     let isMeasuring = true;
-    return /*#__PURE__*/React.createElement("div", _extends({
+    return /*#__PURE__*/_react.default.createElement("div", _extends({
       key: "measuring-".concat(refinedIndex)
-    }, getStoneProps(item, refinedIndex, measuringPositions[i], isMeasuring)), /*#__PURE__*/React.createElement(Component, {
+    }, getStoneProps(item, refinedIndex, measuringPositions[i], isMeasuring)), /*#__PURE__*/_react.default.createElement(Component, {
       data: item,
       itemIdx: refinedIndex,
       isMeasuring: isMeasuring
@@ -81,30 +85,30 @@ function Masonry(props) {
   if (!width) {
     // When the width is empty (usually after a re-mount) render an empty
     // div to collect the width for layout
-    gridBody = /*#__PURE__*/React.createElement("div", {
+    gridBody = /*#__PURE__*/_react.default.createElement("div", {
       style: {
         width: '100%'
       },
       ref: gridWrapperElementRef
     });
   } else {
-    gridBody = /*#__PURE__*/React.createElement("div", {
+    gridBody = /*#__PURE__*/_react.default.createElement("div", {
       style: {
         width: '100%'
       },
       ref: gridWrapperElementRef
-    }, /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/_react.default.createElement("div", {
       className: "masonry",
       style: _objectSpread(_objectSpread({}, _styles.default.Masonry), {}, {
         height,
         width
       })
-    }, itemsToRender.map(renderItems)), /*#__PURE__*/React.createElement("div", {
+    }, itemsToRender.map(renderItems)), /*#__PURE__*/_react.default.createElement("div", {
       className: "masonry",
       style: _objectSpread(_objectSpread({}, _styles.default.Masonry), {}, {
         width
       })
-    }, itemsToMeasure.map(renderMeasuringItem)), scrollContainer && /*#__PURE__*/React.createElement(_FetchItems.default, {
+    }, itemsToMeasure.map(renderMeasuringItem)), scrollContainer && /*#__PURE__*/_react.default.createElement(_FetchItems.default, {
       containerHeight: containerHeightRef.current,
       fetchMore: fetchMore,
       isFetching: isFetching || hasPendingMeasurements,
@@ -113,7 +117,7 @@ function Masonry(props) {
     }));
   }
 
-  return scrollContainer ? /*#__PURE__*/React.createElement(_ScrollContainer.default, {
+  return scrollContainer ? /*#__PURE__*/_react.default.createElement(_ScrollContainer.default, {
     ref: scrollContainerElementRef,
     onScroll: updateScrollPosition,
     scrollContainer: scrollContainer

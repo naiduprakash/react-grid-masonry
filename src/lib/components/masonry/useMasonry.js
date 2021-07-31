@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 
 import styles from './styles.js';
@@ -40,7 +40,7 @@ export default function useMasonry(props) {
   const containerHeightRef = useRef(0);
   const containerOffsetRef = useRef(0);
   const insertAnimationFrameRef = useRef();
-  
+
   const gridWrapperElementRef = useRef();
   const scrollContainerElementRef = useRef();
 
