@@ -1,3 +1,4 @@
+import React from "react";
 import styles from './styles.js';
 import FetchItems from './FetchItems.js';
 import ScrollContainer from './ScrollContainer.js';
